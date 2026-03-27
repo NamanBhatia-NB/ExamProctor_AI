@@ -13,26 +13,26 @@ export const examService = {
     storage.saveExams([...exams, newExam]);
     return newExam;
   },
-  
+
   getExams: (): Exam[] => {
     return storage.getExams();
   },
-  
+
   getExamById: (id: string): Exam | null => {
     const exams = storage.getExams();
     return exams.find(e => e.id === id) || null;
   },
-  
+
   updateExam: (id: string, updates: Partial<Exam>): Exam | null => {
     const exams = storage.getExams();
     const index = exams.findIndex(e => e.id === id);
     if (index === -1) return null;
-    
+
     exams[index] = { ...exams[index], ...updates };
     storage.saveExams(exams);
     return exams[index];
   },
-  
+
   deleteExam: (id: string): boolean => {
     const exams = storage.getExams();
     const filtered = exams.filter(e => e.id !== id);
@@ -40,7 +40,7 @@ export const examService = {
     storage.saveExams(filtered);
     return true;
   },
-  
+
   // Session Management
   startSession: (examId: string, studentId: string): ExamSession => {
     const sessions = storage.getSessions();
@@ -58,85 +58,94 @@ export const examService = {
     storage.saveSessions([...sessions, newSession]);
     return newSession;
   },
-  
+
   getSession: (id: string): ExamSession | null => {
     const sessions = storage.getSessions();
     return sessions.find(s => s.id === id) || null;
   },
-  
+
   updateSession: (id: string, updates: Partial<ExamSession>): ExamSession | null => {
     const sessions = storage.getSessions();
     const index = sessions.findIndex(s => s.id === id);
     if (index === -1) return null;
-    
+
     sessions[index] = { ...sessions[index], ...updates };
     storage.saveSessions(sessions);
     return sessions[index];
   },
-  
+
   saveAnswer: (sessionId: string, answer: Answer): void => {
     const session = examService.getSession(sessionId);
     if (!session) return;
-    
+
     const answers = session.answers.filter(a => a.questionId !== answer.questionId);
     answers.push(answer);
-    
+
     examService.updateSession(sessionId, { answers });
   },
-  
+
   logEvent: (sessionId: string, event: Omit<ActivityEvent, 'id' | 'timestamp'>): void => {
     const session = examService.getSession(sessionId);
     if (!session) return;
-    
+
     const newEvent: ActivityEvent = {
       ...event,
       id: crypto.randomUUID(),
       timestamp: new Date().toISOString(),
     };
-    
+
     examService.updateSession(sessionId, {
       events: [...session.events, newEvent],
     });
   },
-  
+
   updateSuspicion: (sessionId: string, score: number): void => {
     const session = examService.getSession(sessionId);
     if (!session) return;
-    
-    const newScore = Math.min(100, session.suspicionScore + score);
+
+    // Apply decay (reduce old score by 10%) and add new penalty
+    let newScore = (session.suspicionScore * 0.9) + score;
+    if (newScore > 100) newScore = 100;
+
     let warningCount = session.warningCount;
-    
-    if (newScore >= 80 && session.suspicionScore < 80) {
+
+    // If score hits 80+, issue a warning and partially RESET the score
+    // to 40 so they can trigger warnings again!
+    if (newScore >= 80) {
       warningCount++;
+
       examService.logEvent(sessionId, {
         type: 'WARNING_ISSUED',
         severity: 'HIGH',
-        details: `Warning ${warningCount}/20: Suspicion threshold reached`,
+        details: `Warning ${warningCount}/20`,
       });
-      
-      if (warningCount >= 20) {
-        examService.submitSession(sessionId, true);
-        return;
-      }
+
+      // Cooldown: Drop score to 40 so it can build up to 80 again for the next warning
+      newScore = 40;
     }
-    
+
+    if (warningCount >= 20) {
+      examService.submitSession(sessionId, true);
+      return;
+    }
+
     examService.updateSession(sessionId, {
       suspicionScore: newScore,
       warningCount,
-    });
+    } as any);
   },
-  
+
   submitSession: (sessionId: string, autoSubmit = false): void => {
     examService.updateSession(sessionId, {
       endTime: new Date().toISOString(),
       status: autoSubmit ? 'auto-submitted' : 'completed',
     });
   },
-  
+
   getSessions: (): ExamSession[] => {
     return storage.getSessions();
   },
-  
+
   getStudentSessions: (studentId: string): ExamSession[] => {
     return storage.getSessions().filter(s => s.studentId === studentId);
   },

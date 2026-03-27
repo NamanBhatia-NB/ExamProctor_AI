@@ -11,46 +11,50 @@ interface WebcamMonitorProps {
 export default function WebcamMonitor({ onDetection, isActive }: WebcamMonitorProps) {
   const videoRef = useRef<HTMLVideoElement>(null);
   const canvasRef = useRef<HTMLCanvasElement>(null);
+  const streamRef = useRef<MediaStream | null>(null);
   const [status, setStatus] = useState<'initializing' | 'active' | 'error'>('initializing');
   const [lastDetection, setLastDetection] = useState<string>('Initializing...');
-  
+
   useEffect(() => {
-    let stream: MediaStream;
     let interval: NodeJS.Timeout;
-    
+
     const initWebcam = async () => {
       try {
-        stream = await navigator.mediaDevices.getUserMedia({ video: true });
-        if (videoRef.current) {
-          videoRef.current.srcObject = stream;
-          setStatus('active');
+        if (!streamRef.current) {
+          const stream = await navigator.mediaDevices.getUserMedia({ video: true });
+          streamRef.current = stream;
+
+          if (videoRef.current) {
+            videoRef.current.srcObject = stream;
+            setStatus('active');
+          }
         }
       } catch (error) {
         console.error('Webcam error:', error);
         setStatus('error');
       }
     };
-    
+
     const captureFrame = async () => {
       if (!videoRef.current || !canvasRef.current || !isActive) return;
-      
+
       const canvas = canvasRef.current;
       const video = videoRef.current;
-      
+
       canvas.width = video.videoWidth;
       canvas.height = video.videoHeight;
-      
+
       const ctx = canvas.getContext('2d');
       if (!ctx) return;
-      
+
       ctx.drawImage(video, 0, 0);
-      
+
       canvas.toBlob(async (blob) => {
         if (!blob) return;
-        
+
         const result = await aiService.detectFaces(blob);
         onDetection(result.face_count, result.suspicion_score, result.level);
-        
+
         if (result.face_count === 0) {
           setLastDetection('⚠️ No face detected');
         } else if (result.face_count > 1) {
@@ -60,43 +64,41 @@ export default function WebcamMonitor({ onDetection, isActive }: WebcamMonitorPr
         }
       }, 'image/jpeg', 0.8);
     };
-    
+
     initWebcam();
-    
+
     if (isActive) {
-      interval = setInterval(captureFrame, 4000); // Every 4 seconds
+      interval = setInterval(captureFrame, 4000);
     }
-    
+
     return () => {
-      if (stream) {
-        stream.getTracks().forEach(track => track.stop());
-      }
-      if (interval) {
-        clearInterval(interval);
-      }
+      if (interval) clearInterval(interval);
+
+      streamRef.current?.getTracks().forEach(track => track.stop());
+      streamRef.current = null;
     };
-  }, [isActive, onDetection]);
-  
+  }, [isActive]);
+
   return (
     <div className="bg-slate-900 rounded-xl overflow-hidden shadow-lg relative">
       <div className="absolute top-3 left-3 flex items-center gap-2 bg-black/50 text-white text-xs px-2 py-1 rounded z-10">
         <div className={`w-2 h-2 rounded-full ${status === 'active' ? 'bg-red-500 animate-pulse' : 'bg-gray-500'}`}></div>
         {status === 'active' ? 'LIVE PROCTORING' : status === 'error' ? 'CAMERA ERROR' : 'INITIALIZING'}
       </div>
-      
-      <video 
-        ref={videoRef} 
-        autoPlay 
-        muted 
+
+      <video
+        ref={videoRef}
+        autoPlay
+        muted
         className="w-full h-48 object-cover transform scale-x-[-1]"
       />
-      
+
       <canvas ref={canvasRef} className="hidden" />
-      
+
       <div className="absolute bottom-2 left-2 right-2 bg-black/60 text-white text-xs px-2 py-1 rounded">
         {lastDetection}
       </div>
-      
+
       {status === 'error' && (
         <div className="absolute inset-0 bg-red-900/80 flex items-center justify-center">
           <div className="text-white text-center p-4">

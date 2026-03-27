@@ -7,6 +7,8 @@ interface SuspicionIndicatorProps {
 }
 
 export default function SuspicionIndicator({ score, warningCount }: SuspicionIndicatorProps) {
+  console.log(score);
+
   const getColor = () => {
     if (score >= 80) return 'bg-red-500';
     if (score >= 50) return 'bg-orange-500';
@@ -18,6 +20,7 @@ export default function SuspicionIndicator({ score, warningCount }: SuspicionInd
     if (score >= 80) return 'text-red-600';
     if (score >= 50) return 'text-orange-600';
     if (score >= 30) return 'text-yellow-600';
+    console.log(score*100);
     return 'text-green-600';
   };
   
@@ -28,7 +31,7 @@ export default function SuspicionIndicator({ score, warningCount }: SuspicionInd
       <div className="mb-4">
         <div className="flex justify-between mb-2">
           <span className="text-sm text-slate-600">Suspicion Level</span>
-          <span className={`text-sm font-bold ${getTextColor()}`}>{score.toFixed(0)}%</span>
+          <span className={`text-sm font-bold ${getTextColor()}`}>{Math.round(score)}%</span>
         </div>
         <div className="w-full bg-slate-200 rounded-full h-3 overflow-hidden">
           <div 

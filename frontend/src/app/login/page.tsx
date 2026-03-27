@@ -19,7 +19,7 @@ export default function LoginPage() {
     
     try {
       const { user } = await auth.login(email, password);
-      window.location.href = user.role === 'admin' ? '/admin' : '/exam';
+      window.location.href = user.role === 'admin' ? '/admin' : '/';
     } catch (err) {
       setError('Invalid email or password');
       setLoading(false);
