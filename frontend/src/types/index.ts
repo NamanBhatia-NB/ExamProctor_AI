@@ -37,6 +37,7 @@ export interface ExamSession {
   warningCount: number;
   events: ActivityEvent[];
   status: 'active' | 'completed' | 'auto-submitted';
+  lastWarningLevel?: number;    
 }
 
 export interface ActivityEvent {
