@@ -39,5 +39,23 @@ export const auth = {
 
   getToken() {
     return localStorage.getItem("token");
-  }
+  },
+
+  async register(name: string, email: string, password: string) {
+    const res = await fetch(`${API}/auth/register`, {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json",
+      },
+      body: JSON.stringify({ name, email, password }),
+    });
+
+    if (!res.ok) {
+      const data = await res.json();
+      throw new Error(data.message || "Registration failed");
+    }
+
+    return res.json();
+  },
+
 };
