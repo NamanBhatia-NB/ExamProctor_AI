@@ -20,6 +20,7 @@ export const storage = {
   
   // Exams
   getExams: (): Exam[] => {
+    if (typeof window === "undefined") return []; // Ensure client-side execution
     const data = localStorage.getItem(STORAGE_KEYS.EXAMS);
     return data ? JSON.parse(data) : [];
   },

@@ -17,7 +17,7 @@ export default function HomePage() {
   // Initialize data on mount
   useEffect(() => {
     setIsClient(true);
-    auth.initializeDefaultUsers();
+    // auth.initializeDefaultUsers();
     initializeSampleData();
   }, []);
 
