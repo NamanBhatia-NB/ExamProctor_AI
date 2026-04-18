@@ -7,7 +7,7 @@ interface SuspicionIndicatorProps {
 }
 
 export default function SuspicionIndicator({ score, warningCount }: SuspicionIndicatorProps) {
-  console.log(score);
+  // console.log(score);
 
   const getColor = () => {
     if (score >= 80) return 'bg-red-500';
@@ -20,7 +20,7 @@ export default function SuspicionIndicator({ score, warningCount }: SuspicionInd
     if (score >= 80) return 'text-red-600';
     if (score >= 50) return 'text-orange-600';
     if (score >= 30) return 'text-yellow-600';
-    console.log(score*100);
+    // console.log(score*100);
     return 'text-green-600';
   };
   

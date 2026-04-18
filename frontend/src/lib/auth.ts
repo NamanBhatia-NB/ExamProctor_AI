@@ -1,4 +1,5 @@
-const API = "http://localhost:8080/api";
+// ✅ Use NEXT_PUBLIC_ so Next.js doesn't hide it
+const API = `${process.env.NEXT_PUBLIC_BACKEND_API || 'http://localhost:8080'}/api`;
 
 export const auth = {
   async login(email: string, password: string) {
@@ -10,21 +11,32 @@ export const auth = {
       body: JSON.stringify({ email, password }),
     });
 
+    // Read the stream EXACTLY ONCE as plain text
+    const responseText = await res.text();
+
+    // Handle Errors safely
     if (!res.ok) {
-      throw new Error("Invalid email or password");
+      let errorMessage = "Invalid email or password";
+      try {
+        const errorData = JSON.parse(responseText);
+        errorMessage = errorData.message || errorMessage;
+      } catch (e) {
+        errorMessage = responseText || errorMessage;
+      }
+      throw new Error(errorMessage);
     }
 
-    const data = await res.json();
+    // Handle Success
+    const data = JSON.parse(responseText);
 
-    // Save token (if backend sends it)
     if (data.token) {
       localStorage.setItem("token", data.token);
     }
 
-    // Save user
-    localStorage.setItem("user", JSON.stringify(data.user));
+    const userData = data.user ? data.user : data;
+    localStorage.setItem("user", JSON.stringify(userData));
 
-    return data; // { user, token }
+    return data;
   },
 
   logout() {
@@ -33,8 +45,13 @@ export const auth = {
   },
 
   getCurrentUser() {
-    const user = localStorage.getItem("user");
-    return user ? JSON.parse(user) : null;
+    if (typeof window !== "undefined") {
+      const user = localStorage.getItem("user");
+      return user ? JSON.parse(user) : null;
+    }
+    
+    // If we are on the server, return null
+    return null;
   },
 
   getToken() {
@@ -50,12 +67,20 @@ export const auth = {
       body: JSON.stringify({ name, email, password }),
     });
 
+    // ✅ APPLIED THE SAME STREAM FIX HERE!
+    const responseText = await res.text();
+
     if (!res.ok) {
-      const data = await res.json();
-      throw new Error(data.message || "Registration failed");
+      let errorMessage = "Registration failed";
+      try {
+        const data = JSON.parse(responseText);
+        errorMessage = data.message || errorMessage;
+      } catch (e) {
+        errorMessage = responseText || errorMessage;
+      }
+      throw new Error(errorMessage);
     }
 
-    return res.json();
+    return JSON.parse(responseText);
   },
-
 };

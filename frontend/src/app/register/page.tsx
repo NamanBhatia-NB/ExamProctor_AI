@@ -3,6 +3,7 @@
 import { useState } from "react";
 import { useRouter } from "next/navigation";
 import { auth } from "@/lib/auth";
+import { SafeAny } from "@/types";
 
 export default function RegisterPage() {
   const [name, setName] = useState("");
@@ -23,7 +24,7 @@ export default function RegisterPage() {
       const res = await auth.register(name, email, password);
       alert("Registration successful! Please log in.");
       router.push("/login");
-    } catch (err: any) {
+    } catch (err: SafeAny) {
       setError(err.message || "Registration failed");
     } finally {
       setLoading(false);

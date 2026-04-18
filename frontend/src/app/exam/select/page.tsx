@@ -1,45 +1,60 @@
 "use client";
 
-import { useState, useEffect } from "react";
-import { redirect, useRouter } from "next/navigation";
-import { examService } from "@/services/examService";
 import Navbar from "@/components/Navbar";
-import { Shield, Video, BarChart3, CheckCircle, PlayCircle, AlertCircle, LogOut } from 'lucide-react';
 import { useAuth } from "@/hooks/useAuth";
+import { api } from "@/services/api";
+import { examService } from "@/services/examService";
+import { SafeAny } from "@/types";
+import { AlertCircle, CheckCircle, PlayCircle } from 'lucide-react';
+import { redirect, useRouter } from "next/navigation";
+import { useEffect, useState } from "react";
 
 export default function SelectExamPage() {
     const { user, loading, logout } = useAuth();
+    const router = useRouter(); // Ensure router is initialized
+    const [exams, setExams] = useState<SafeAny[]>([]);
+    const [loadingExams, setLoadingExams] = useState(true);
+    const [mySessions, setMySessions] = useState<SafeAny[]>([]);
 
     useEffect(() => {
-        console.log("User from useAuth:", user); // Debugging log
+        // console.log("User from useAuth:", user);
 
         if (!user && !loading) {
             redirect('/login');
         }
-    }, [user, loading]); // Ensure effect runs when user or loading changes
+    }, [user, loading]);
 
-    const exams = examService.getExams();
-    const mySessions = user ? examService.getStudentSessions(user.id) : [];
+    useEffect(() => {
+        const fetchData = async () => {
+            if (!user) return;
+            try {
+                const examRes = await api.get("/exams");
+                setExams(Array.isArray(examRes.data) ? examRes.data : examRes.data.content || []);
 
-    const router = useRouter(); // Ensure router is initialized
+                // Fetch sessions from DB!
+                const sessionRes = await examService.getStudentSessions(user.id);
+                setMySessions(sessionRes);
+            } catch (error) {
+                console.error("Failed to fetch data:", error);
+            } finally {
+                setLoadingExams(false);
+            }
+        };
+        fetchData();
+    }, [user]);
 
-    const handleSelectExam = (examId: any) => {
-        router.push(`/exam?examId=${examId}`); // Redirect to the selected exam
+    // const mySessions = user ? examService.getStudentSessions(user.id) : [];
+
+    const handleSelectExam = (examId: SafeAny) => {
+        router.push(`/exam?examId=${examId}`);
     };
+
+    if (loading || loadingExams) {
+        return <div className="min-h-screen bg-slate-50 flex items-center justify-center">Loading Exams...</div>;
+    }
 
     return (
         <div className="min-h-screen bg-slate-50">
-            {/* <nav className="bg-white border-b border-slate-200 px-6 py-4 shadow-sm">
-          <div className="max-w-4xl mx-auto flex justify-between items-center">
-            <h1 className="text-xl font-bold text-blue-600">ExamProctor AI</h1>
-            <div className="flex items-center gap-4">
-              <span className="text-slate-600 font-medium">{user.name}</span>
-              <button onClick={handleLogout} className="p-2 text-slate-400 hover:text-red-500 transition rounded-lg hover:bg-red-50">
-                <LogOut size={20} />
-              </button>
-            </div>
-          </div>
-        </nav> */}
 
             <Navbar />
 

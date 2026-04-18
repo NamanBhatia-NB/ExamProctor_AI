@@ -36,6 +36,7 @@ export const aiService = {
         face_count: 1,
         suspicion_score: 0.1,
         level: 'LOW',
+        flags: [],
       };
     }
   },

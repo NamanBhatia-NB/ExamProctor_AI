@@ -1,10 +1,11 @@
 "use client";
 
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import { useRouter } from "next/navigation";
 import { auth } from "@/lib/auth";
 import { LogIn, AlertCircle } from "lucide-react";
 import Link from "next/link";
+import { SafeAny } from "@/types";
 
 export default function LoginPage() {
   const [email, setEmail] = useState("");
@@ -14,8 +15,20 @@ export default function LoginPage() {
 
   const router = useRouter();
 
+  useEffect(() => {
+    const user = auth.getCurrentUser();
+    if (user) {
+      // Spring Boot might send roles in uppercase (ADMIN) or lowercase (admin)
+      if (user.role === "admin" || user.role === "ADMIN") {
+        router.push("/admin");
+      } else {
+        router.push("/exam/select");
+      }
+    }
+  }, [router]);
+
   const handleLogin = async (e: React.FormEvent) => {
-    e.preventDefault(); // 🚨 IMPORTANT FIX
+    e.preventDefault();
 
     setLoading(true);
     setError("");
@@ -27,10 +40,10 @@ export default function LoginPage() {
       if (user.role === "admin") {
         router.push("/admin");
       } else {
-        router.push("/exam");
+        router.push("/exam/select");
       }
 
-    } catch (err: any) {
+    } catch (err: SafeAny) {
       setError(err.message || "Login failed");
     } finally {
       setLoading(false);
@@ -95,7 +108,13 @@ export default function LoginPage() {
           </button>
         </form>
 
-        <div className="mt-6 text-center">
+        <div className="text-center mt-4">
+          <p className="text-sm text-slate-600">
+            Don&apos;t have an account ? Create <a href="/register" className="text-blue-500 hover:underline">here</a>.
+          </p>
+        </div>
+
+        <div className="mt-2 text-center">
           <Link href="/" className="text-sm text-blue-600">
             ← Back to Home
           </Link>

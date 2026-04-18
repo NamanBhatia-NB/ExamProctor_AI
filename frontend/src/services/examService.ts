@@ -1,5 +1,6 @@
 import { Exam, ExamSession, Answer, ActivityEvent } from '@/types';
 import { storage } from '@/utils/storage';
+import { api } from './api';
 
 export const examService = {
   // Exam Management
@@ -42,26 +43,33 @@ export const examService = {
   },
 
   // Session Management
-  startSession: (examId: string, studentId: string): ExamSession => {
-    const sessions = storage.getSessions();
-    const newSession: ExamSession = {
-      id: crypto.randomUUID(),
-      examId,
-      studentId,
-      startTime: new Date().toISOString(),
-      answers: [],
-      suspicionScore: 0,
-      warningCount: 0,
-      events: [],
-      status: 'active',
-    };
-    storage.saveSessions([...sessions, newSession]);
-    return newSession;
+  startSession: async (examId: string | number, studentId: string | number): Promise<ExamSession> => {
+    const res = await api.post('/sessions/start', { examId, studentId });
+    return res.data;
   },
 
-  getSession: (id: string): ExamSession | null => {
-    const sessions = storage.getSessions();
-    return sessions.find(s => s.id === id) || null;
+  getSession: async (sessionId: string): Promise<ExamSession | null> => {
+    try {
+      const res = await api.get(`/sessions/${sessionId}`);
+      return res.data;
+    } catch (err) {
+      console.error("Session not found");
+      return null;
+    }
+  },
+
+  getSessions: async (): Promise<ExamSession[]> => {
+    const res = await api.get('/sessions');
+    return res.data;
+  },
+
+  getStudentSessions: async (studentId: string | number): Promise<ExamSession[]> => {
+    try {
+      const res = await api.get(`/sessions/student/${studentId}`);
+      return Array.isArray(res.data) ? res.data : [];
+    } catch (err) {
+      return [];
+    }
   },
 
   updateSession: (id: string, updates: Partial<ExamSession>): ExamSession | null => {
@@ -74,79 +82,23 @@ export const examService = {
     return sessions[index];
   },
 
-  saveAnswer: (sessionId: string, answer: Answer): void => {
-    const session = examService.getSession(sessionId);
-    if (!session) return;
-
-    const answers = session.answers.filter(a => a.questionId !== answer.questionId);
-    answers.push(answer);
-
-    examService.updateSession(sessionId, { answers });
+  saveAnswer: async (sessionId: string, answer: Answer): Promise<void> => {
+    await api.post(`/sessions/${sessionId}/answers`, answer);
   },
 
-  logEvent: (sessionId: string, event: Omit<ActivityEvent, 'id' | 'timestamp'>): void => {
-    const session = examService.getSession(sessionId);
-    if (!session) return;
-
-    const newEvent: ActivityEvent = {
-      ...event,
-      id: crypto.randomUUID(),
-      timestamp: new Date().toISOString(),
-    };
-
-    examService.updateSession(sessionId, {
-      events: [...session.events, newEvent],
-    });
+  logEvent: async (sessionId: string, event: Omit<ActivityEvent, 'id' | 'timestamp'>): Promise<void> => {
+    await api.post(`/sessions/${sessionId}/events`, event);
   },
 
-  updateSuspicion: (sessionId: string, score: number): void => {
-    const session = examService.getSession(sessionId);
-    if (!session) return;
-
-    // Apply decay (reduce old score by 10%) and add new penalty
-    let newScore = (session.suspicionScore * 0.9) + score;
-    if (newScore > 100) newScore = 100;
-
-    let warningCount = session.warningCount;
-
-    // If score hits 80+, issue a warning and partially RESET the score
-    // to 40 so they can trigger warnings again!
-    if (newScore >= 80) {
-      warningCount++;
-
-      examService.logEvent(sessionId, {
-        type: 'WARNING_ISSUED',
-        severity: 'HIGH',
-        details: `Warning ${warningCount}/20`,
-      });
-
-      // Cooldown: Drop score to 40 so it can build up to 80 again for the next warning
-      newScore = 40;
-    }
-
-    if (warningCount >= 20) {
-      examService.submitSession(sessionId, true);
-      return;
-    }
-
-    examService.updateSession(sessionId, {
-      suspicionScore: newScore,
-      warningCount,
-    } as any);
+  updateSuspicion: async (sessionId: string, score: number): Promise<ExamSession | null> => {
+    // Notice how simple this is now! 
+    // Java handles the 10% decay, the 80+ warnings, and the 20 limit auto-submit.
+    const res = await api.put(`/sessions/${sessionId}/suspicion`, { score });
+    return res.data;
   },
 
-  submitSession: (sessionId: string, autoSubmit = false): void => {
-    examService.updateSession(sessionId, {
-      endTime: new Date().toISOString(),
-      status: autoSubmit ? 'auto-submitted' : 'completed',
-    });
-  },
-
-  getSessions: (): ExamSession[] => {
-    return storage.getSessions();
-  },
-
-  getStudentSessions: (studentId: string): ExamSession[] => {
-    return storage.getSessions().filter(s => s.studentId === studentId);
+  submitSession: async (sessionId: string): Promise<ExamSession> => {
+    const res = await api.put(`/sessions/${sessionId}/submit`);
+    return res.data;
   },
 };

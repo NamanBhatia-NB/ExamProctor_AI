@@ -9,6 +9,10 @@ export interface Question {
   id: string;
   text: string;
   options: string[];
+  optionA: string;
+  optionB: string;
+  optionC: string;
+  optionD: string;
   correctAnswer: number;
 }
 
@@ -29,7 +33,8 @@ export interface Answer {
 export interface ExamSession {
   id: string;
   examId: string;
-  studentId: string;
+  studentId?: string;
+  student?: User;
   startTime: string;
   endTime?: string;
   answers: Answer[];
@@ -37,14 +42,14 @@ export interface ExamSession {
   warningCount: number;
   events: ActivityEvent[];
   status: 'active' | 'completed' | 'auto-submitted';
-  lastWarningLevel?: number;    
+  lastWarningLevel?: number;
 }
 
 export interface ActivityEvent {
   id: string;
-  type: 'FACE_NOT_DETECTED' | 'MULTIPLE_FACES' | 'TAB_SWITCH' | 'WINDOW_BLUR' | 'WARNING_ISSUED';
+  type: 'FACE_NOT_DETECTED' | 'MULTIPLE_FACES' | 'TAB_SWITCH' | 'WINDOW_BLUR' | 'WARNING_ISSUED' | 'FULLSCREEN_EXIT' | 'TALKING_DETECTED' | 'LOOKING_AWAY' | 'BACKGROUND_NOISE' | (string & {});
   timestamp: string;
-  severity: 'LOW' | 'HIGH' | 'CRITICAL';
+  severity: 'LOW' | 'HIGH' | 'CRITICAL' | (string & {});
   details?: string;
 }
 
@@ -53,4 +58,7 @@ export interface AIDetectionResult {
   face_count: number;
   suspicion_score: number;
   level: 'LOW' | 'HIGH' | 'CRITICAL';
+  flags: string[];
 }
+
+export type SafeAny = any;

@@ -71,6 +71,6 @@ export const initializeSampleData = () => {
       ],
     });
     
-    console.log('Sample exams initialized');
+    // console.log('Sample exams initialized');
   }
 };
