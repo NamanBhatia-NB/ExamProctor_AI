@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useState, useCallback, useRef } from "react";
+import { useEffect, useState, useCallback, useRef, Suspense } from "react";
 import { useRouter, useSearchParams } from "next/navigation";
 import { useAuth } from "@/hooks/useAuth";
 import { examService } from "@/services/examService";
@@ -13,6 +13,19 @@ import { Clock, AlertTriangle } from "lucide-react";
 import toast from "react-hot-toast";
 
 export default function ExamPage() {
+  return (
+    // Wrap the content in a Suspense boundary with a nice loading fallback
+    <Suspense fallback={
+      <div className="min-h-screen flex items-center justify-center bg-slate-50">
+        <div className="text-xl font-semibold text-slate-600">Loading Exam Environment...</div>
+      </div>
+    }>
+      <ExamContent />
+    </Suspense>
+  );
+}
+
+function ExamContent() {
   const { user, loading } = useAuth();
   const router = useRouter();
 
