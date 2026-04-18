@@ -1,0 +1,84 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Student Dashboard</title>
+</head>
+<body>
+
+<h2>Welcome, Student</h2>
+
+<input type="number" id="examId" placeholder="Enter Exam ID"><br><br>
+<button onclick="loadQuestions()">Load Exam</button>
+
+<hr>
+
+<div id="questionsContainer"></div>
+
+<br>
+<button onclick="submitExam()">Submit Exam</button>
+
+<p id="result"></p>
+
+<script>
+
+    let questions = [];
+    let answers = {};
+
+    // ================= LOAD QUESTIONS =================
+
+    async function loadQuestions() {
+
+        const examId = document.getElementById("examId").value;
+
+        const response = await fetch("http://localhost:8080/api/questions/" + examId);
+        questions = await response.json();
+
+        console.log(questions);
+
+        const container = document.getElementById("questionsContainer");
+        container.innerHTML = "";
+
+        questions.forEach((q, index) => {
+
+            const div = document.createElement("div");
+
+            div.innerHTML = `
+                <p><b>Q${index + 1}: ${q.question}</b></p>
+
+                <input type="radio" name="q${q.id}" value="A" onclick="saveAnswer(${q.id}, 'A')"> ${q.optionA} <br>
+                <input type="radio" name="q${q.id}" value="B" onclick="saveAnswer(${q.id}, 'B')"> ${q.optionB} <br>
+                <input type="radio" name="q${q.id}" value="C" onclick="saveAnswer(${q.id}, 'C')"> ${q.optionC} <br>
+                <input type="radio" name="q${q.id}" value="D" onclick="saveAnswer(${q.id}, 'D')"> ${q.optionD} <br>
+                <hr>
+            `;
+
+            container.appendChild(div);
+        });
+    }
+
+    // ================= SAVE ANSWER =================
+
+    function saveAnswer(questionId, option) {
+        answers[questionId] = option;
+    }
+
+    // ================= SUBMIT EXAM =================
+
+    function submitExam() {
+
+        let score = 0;
+
+        questions.forEach(q => {
+            if (answers[q.id] === q.correctAnswer) {
+                score++;
+            }
+        });
+
+        document.getElementById("result").innerText =
+            "🎯 Your Score: " + score + " / " + questions.length;
+    }
+
+</script>
+
+</body>
+</html>

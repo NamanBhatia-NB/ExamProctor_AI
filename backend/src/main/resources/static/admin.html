@@ -1,0 +1,138 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Admin Dashboard</title>
+</head>
+<body>
+
+<h2>Welcome, Admin</h2>
+
+<!-- ================= CREATE EXAM ================= -->
+
+<h3>Create Exam</h3>
+
+<input type="text" id="title" placeholder="Exam Title"><br><br>
+<input type="number" id="duration" placeholder="Duration (minutes)"><br><br>
+
+<button onclick="createExam()">Create Exam</button>
+
+<p id="message"></p>
+
+<hr>
+
+<!-- ================= ADD QUESTION ================= -->
+
+<h3>Add Question</h3>
+
+<input type="number" id="examId" placeholder="Exam ID"><br><br>
+
+<input type="text" id="question" placeholder="Question"><br><br>
+
+<input type="text" id="A" placeholder="Option A"><br>
+<input type="text" id="B" placeholder="Option B"><br>
+<input type="text" id="C" placeholder="Option C"><br>
+<input type="text" id="D" placeholder="Option D"><br><br>
+
+<input type="text" id="answer" placeholder="Correct Answer (A/B/C/D)"><br><br>
+
+<button onclick="addQuestion()">Add Question</button>
+
+<p id="qMessage"></p>
+
+<!-- ================= SCRIPT ================= -->
+
+<script>
+
+    // ✅ CREATE EXAM FUNCTION (MISSING BEFORE)
+    async function createExam() {
+
+        const title = document.getElementById("title").value;
+        const duration = document.getElementById("duration").value;
+
+        if (!title || !duration) {
+            alert("Please fill all fields");
+            return;
+        }
+
+        try {
+            const response = await fetch("http://localhost:8080/api/exams", {
+                method: "POST",
+                headers: {
+                    "Content-Type": "application/json"
+                },
+                body: JSON.stringify({
+                    title: title,
+                    duration: duration
+                })
+            });
+
+            if (!response.ok) {
+                const error = await response.text();
+                document.getElementById("message").innerText = error;
+                return;
+            }
+
+            const data = await response.json();
+
+            console.log("Exam created:", data);
+
+            document.getElementById("message").innerText =
+                "✅ Exam Created! ID = " + data.id;
+
+        } catch (error) {
+            console.error(error);
+            document.getElementById("message").innerText = "❌ Server error!";
+        }
+    }
+
+
+    // ✅ ADD QUESTION FUNCTION
+    async function addQuestion() {
+
+        const examId = document.getElementById("examId").value;
+
+        if (!examId) {
+            alert("Enter Exam ID");
+            return;
+        }
+
+        try {
+            const response = await fetch("http://localhost:8080/api/questions", {
+                method: "POST",
+                headers: {
+                    "Content-Type": "application/json"
+                },
+                body: JSON.stringify({
+                    question: document.getElementById("question").value,
+                    optionA: document.getElementById("A").value,
+                    optionB: document.getElementById("B").value,
+                    optionC: document.getElementById("C").value,
+                    optionD: document.getElementById("D").value,
+                    correctAnswer: document.getElementById("answer").value,
+                    exam: { id: Number(examId) }
+                })
+            });
+
+            if (!response.ok) {
+                const error = await response.text();
+                document.getElementById("qMessage").innerText = error;
+                return;
+            }
+
+            const data = await response.json();
+
+            console.log("Question added:", data);
+
+            document.getElementById("qMessage").innerText =
+                "✅ Question Added Successfully!";
+
+        } catch (error) {
+            console.error(error);
+            document.getElementById("qMessage").innerText = "❌ Server error!";
+        }
+    }
+
+</script>
+
+</body>
+</html>
