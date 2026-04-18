@@ -11,7 +11,6 @@ import java.util.List;
 
 @RestController
 @RequestMapping("/api/exams")
-// ✅ EXACT ORIGIN, ALLOW CREDENTIALS
 @CrossOrigin(origins = "http://localhost:3000", allowCredentials = "true")
 public class ExamController {
 
