@@ -7,7 +7,7 @@ export interface User {
 
 export interface Question {
   id: string;
-  text: string;
+  question: string;
   options: string[];
   optionA: string;
   optionB: string;

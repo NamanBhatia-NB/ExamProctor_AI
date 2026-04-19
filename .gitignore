@@ -6,3 +6,5 @@ target/
 .mvn
 .idea
 .github
+.env.local
+.vscode

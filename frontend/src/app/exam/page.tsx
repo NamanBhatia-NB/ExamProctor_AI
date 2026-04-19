@@ -401,7 +401,9 @@ function ExamContent() {
                 <h3 className="text-lg font-medium text-slate-700 mb-4">
                   Question {currentQuestion + 1} of {questionsList.length}
                 </h3>
-                <p className="text-slate-600 text-lg mb-6">{question.text || question.text}</p>
+                <p className="text-slate-600 text-lg mb-6">
+                  {question.question }
+                </p>
 
                 <div className="space-y-3">
                   {question.options.map((opt: string, i: number) => (
