@@ -59,7 +59,7 @@ public class SecurityConfig {
         CorsConfiguration configuration = new CorsConfiguration();
         // Match your exact React frontend URL
         configuration.setAllowedOrigins(List.of(frontendUrl));
-        configuration.setAllowedOrigins(List.of("http://localhost:3000"));
+        // configuration.setAllowedOrigins(List.of("http://localhost:3000"));
         // Allow all standard methods
         configuration.setAllowedMethods(List.of("GET", "POST", "PUT", "DELETE", "OPTIONS", "PATCH"));
         // Allow all headers
