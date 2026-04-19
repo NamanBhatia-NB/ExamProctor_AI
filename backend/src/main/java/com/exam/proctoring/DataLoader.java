@@ -7,26 +7,29 @@ import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 
 @Configuration
-
 public class DataLoader {
 
     @Bean
     CommandLineRunner load(UserRepository repo) {
         return args -> {
 
-            User admin = new User();
-            admin.setEmail("admin@test.com");
-            admin.setPassword("admin123");
-            admin.setRole("admin");
+            if (repo.findByEmail("admin@test.com").isEmpty()) {
+                User admin = new User();
+                admin.setEmail("admin@test.com");
+                admin.setPassword("admin123");
+                admin.setRole("admin");
+                repo.save(admin);
+                System.out.println("Default Admin created.");
+            }
 
-            repo.save(admin);
-
-            User student = new User();
-            student.setEmail("student@test.com");
-            student.setPassword("student123");
-            student.setRole("student");
-
-            repo.save(student);
+            if (repo.findByEmail("student@test.com").isEmpty()) {
+                User student = new User();
+                student.setEmail("student@test.com");
+                student.setPassword("student123");
+                student.setRole("student");
+                repo.save(student);
+                System.out.println("Default Student created.");
+            }
         };
     }
 }
