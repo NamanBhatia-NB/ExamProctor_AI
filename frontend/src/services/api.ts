@@ -21,5 +21,5 @@ api.interceptors.request.use((config) => {
 });
 
 export const aiApi = axios.create({
-  baseURL: process.env.NEXT_PUBLIC_AI_API || "http://localhost:8000"
+  baseURL: process.env.NEXT_PUBLIC_AI_SERVICE_URL || "http://localhost:8000"
 });
