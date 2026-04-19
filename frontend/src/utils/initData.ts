@@ -12,7 +12,7 @@ export const initializeSampleData = () => {
       questions: [
         {
           id: crypto.randomUUID(),
-          text: 'Which data structure is most optimal for implementing a priority queue?',
+          question: 'Which data structure is most optimal for implementing a priority queue?',
           options: ['Array', 'Linked List', 'Binary Heap', 'Binary Search Tree'],
           optionA: 'Array',
           optionB: 'Linked List',
@@ -22,7 +22,7 @@ export const initializeSampleData = () => {
         },
         {
           id: crypto.randomUUID(),
-          text: 'What is the time complexity of searching in a balanced BST?',
+          question: 'What is the time complexity of searching in a balanced BST?',
           options: ['O(1)', 'O(log n)', 'O(n)', 'O(n log n)'],
           optionA: 'O(1)',
           optionB: 'O(log n)',
@@ -32,7 +32,7 @@ export const initializeSampleData = () => {
         },
         {
           id: crypto.randomUUID(),
-          text: 'Which data structure uses LIFO principle?',
+          question: 'Which data structure uses LIFO principle?',
           options: ['Queue', 'Stack', 'Tree', 'Graph'],
           optionA: 'Queue',
           optionB: 'Stack',
@@ -42,7 +42,7 @@ export const initializeSampleData = () => {
         },
         {
           id: crypto.randomUUID(),
-          text: 'What is the worst-case time complexity of QuickSort?',
+          question: 'What is the worst-case time complexity of QuickSort?',
           options: ['O(n)', 'O(n log n)', 'O(n²)', 'O(log n)'],
           optionA: 'O(n)',
           optionB: 'O(n log n)',
@@ -52,7 +52,7 @@ export const initializeSampleData = () => {
         },
         {
           id: crypto.randomUUID(),
-          text: 'Which traversal visits the root node first?',
+          question: 'Which traversal visits the root node first?',
           options: ['Inorder', 'Preorder', 'Postorder', 'Level-order'],
           optionA: 'Inorder',
           optionB: 'Preorder',
@@ -71,7 +71,7 @@ export const initializeSampleData = () => {
       questions: [
         {
           id: crypto.randomUUID(),
-          text: 'Which algorithm uses divide and conquer strategy?',
+          question: 'Which algorithm uses divide and conquer strategy?',
           options: ['Bubble Sort', 'Merge Sort', 'Selection Sort', 'Insertion Sort'],
           optionA: 'Bubble Sort',
           optionB: 'Merge Sort',
@@ -81,7 +81,7 @@ export const initializeSampleData = () => {
         },
         {
           id: crypto.randomUUID(),
-          text: 'What is the space complexity of recursive Fibonacci?',
+          question: 'What is the space complexity of recursive Fibonacci?',
           options: ['O(1)', 'O(log n)', 'O(n)', 'O(n²)'],
           optionA: 'O(1)',
           optionB: 'O(log n)',
@@ -91,7 +91,7 @@ export const initializeSampleData = () => {
         },
         {
           id: crypto.randomUUID(),
-          text: 'Which algorithm is used for finding shortest path in weighted graphs?',
+          question: 'Which algorithm is used for finding shortest path in weighted graphs?',
           options: ['BFS', 'DFS', 'Dijkstra', 'Kruskal'],
           optionA: 'BFS',
           optionB: 'DFS',
