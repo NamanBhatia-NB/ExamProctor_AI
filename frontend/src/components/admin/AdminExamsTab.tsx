@@ -6,6 +6,7 @@ import { Edit, Plus, Trash2 } from "lucide-react";
 import { useEffect, useState } from "react";
 import ExamForm from "../ExamForm";
 import { useRouter } from "next/navigation";
+import toast from "react-hot-toast";
 
 export default function AdminExamsTab() {
     const router = useRouter();
@@ -14,10 +15,12 @@ export default function AdminExamsTab() {
     const [sessions, setSessions] = useState<ExamSession[]>([]);
     const [showCreateExam, setShowCreateExam] = useState(false);
     const [editingExam, setEditingExam] = useState<Exam | null>(null);
+    const [isSubmitting, setIsSubmitting] = useState(false);
+    const [isFetchingData, setIsFetchingData] = useState(true);
 
     const loadData = async () => {
+        setIsFetchingData(true);
         try {
-            // ✅ Fetch BOTH Exams and Sessions simultaneously
             const [examsRes, sessionsRes] = await Promise.all([
                 api.get("/exams"),
                 api.get("/sessions") // This calls the getAllSessions endpoint we made in Java!
@@ -28,6 +31,9 @@ export default function AdminExamsTab() {
 
         } catch (err) {
             console.error("Error loading admin data:", err);
+        }
+        finally {
+            setIsFetchingData(false); // ✅ FIX: Unlock screen
         }
     };
 
@@ -47,10 +53,11 @@ export default function AdminExamsTab() {
         init();
     }, [user, loading, router]);
 
-    if (loading) {
+    if (loading || isFetchingData) {
         return (
-            <div className="min-h-screen flex items-center justify-center">
-                <div className="text-slate-600">Loading...</div>
+            <div className="min-h-[60vh] flex flex-col items-center justify-center">
+                <div className="w-12 h-12 border-4 border-blue-600 border-t-transparent rounded-full animate-spin mb-4"></div>
+                <div className="text-slate-600 font-medium text-lg">Loading Dashboard Data...</div>
             </div>
         );
     }
@@ -58,6 +65,7 @@ export default function AdminExamsTab() {
     if (!user) return null;
 
     const handleCreateExam = async (examData: SafeAny) => {
+        setIsSubmitting(true);
         try {
             // Helper array to convert radio button index (0-3) to letters (A-D)
             const indexToLetter = ['A', 'B', 'C', 'D'];
@@ -83,9 +91,13 @@ export default function AdminExamsTab() {
             await loadData();
             setShowCreateExam(false);
 
+            toast.success("Exam Created!");
+
         } catch (err) {
             console.error("Error creating exam:", err);
             alert("Failed to save exam. Check console for details.");
+        } finally {
+            setIsSubmitting(false);
         }
     };
 
@@ -184,6 +196,7 @@ export default function AdminExamsTab() {
                     onSubmit={handleCreateExam}
                     onCancel={() => setShowCreateExam(false)}
                     userId={user.id}
+                    isSubmitting={isSubmitting}
                 />
             )}
 
@@ -193,6 +206,7 @@ export default function AdminExamsTab() {
                     onSubmit={(data) => handleUpdateExam(editingExam.id, data)}
                     onCancel={() => setEditingExam(null)}
                     userId={user.id}
+                    isSubmitting={isSubmitting} // ✅ FIX: Pass down
                 />
             )}
         </div>

@@ -269,9 +269,25 @@ function ExamContent() {
   const handleAnswerSelect = (optionIndex: number) => {
     if (!exam || !session || !exam.questions || exam.questions.length === 0) return;
 
+    const currentQId = exam.questions[currentQuestion].id;
+
+    // 1. Instantly update the UI selected state
     setSelectedAnswer(optionIndex);
+
+    // 2. Optimistically update the local session state so Previous/Next works instantly!
+    setSession(prevSession => {
+      if (!prevSession) return prevSession;
+
+      // Remove any existing answer for this question and add the new one
+      const updatedAnswers = prevSession.answers.filter(a => a.questionId !== currentQId);
+      updatedAnswers.push({ questionId: currentQId, selectedOption: optionIndex });
+
+      return { ...prevSession, answers: updatedAnswers };
+    });
+
+    // 3. Fire the API call in the background
     examService.saveAnswer(session.id, {
-      questionId: exam.questions[currentQuestion].id,
+      questionId: currentQId,
       selectedOption: optionIndex,
     });
   };
@@ -402,7 +418,7 @@ function ExamContent() {
                   Question {currentQuestion + 1} of {questionsList.length}
                 </h3>
                 <p className="text-slate-600 text-lg mb-6">
-                  {question.question }
+                  {question.question}
                 </p>
 
                 <div className="space-y-3">

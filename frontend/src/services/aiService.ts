@@ -23,7 +23,7 @@ export const aiService = {
         formData,
         {
           headers: { 'Content-Type': 'multipart/form-data' },
-          timeout: 5000,
+          timeout: 60000,
         }
       );
       

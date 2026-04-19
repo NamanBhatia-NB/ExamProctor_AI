@@ -6,17 +6,19 @@ export default function ExamForm({
   exam,
   onSubmit,
   onCancel,
-  userId
+  userId,
+  isSubmitting
 }: {
   exam?: SafeAny;
   onSubmit: (data: SafeAny) => void;
   onCancel: () => void;
   userId: string;
+  isSubmitting: boolean;
 }) {
   const [title, setTitle] = useState(exam?.title || '');
   const [duration, setDuration] = useState(exam?.duration || 60);
-  
-  // ✅ FIX: Translate Backend Format -> Frontend Format when Editing
+
+  // FIX: Translate Backend Format -> Frontend Format when Editing
   const [questions, setQuestions] = useState<SafeAny[]>(() => {
     if (exam && exam.questions && exam.questions.length > 0) {
       return exam.questions.map((q: SafeAny) => {
@@ -172,15 +174,25 @@ export default function ExamForm({
             <button
               type="button"
               onClick={onCancel}
-              className="px-6 py-2 border border-slate-300 rounded-lg text-slate-600 hover:bg-slate-50 transition"
+              disabled={isSubmitting}
+              className="px-6 py-2 border border-slate-300 rounded-lg text-slate-600 hover:bg-slate-50 transition disabled:opacity-50"
             >
               Cancel
             </button>
             <button
               type="submit"
-              className="px-6 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition"
+              disabled={isSubmitting}
+              className={`px-6 py-2 rounded-lg text-white transition flex items-center justify-center min-w-[140px] ${isSubmitting ? 'bg-blue-400 cursor-not-allowed' : 'bg-blue-600 hover:bg-blue-700'
+                }`}
             >
-              {exam ? 'Update Exam' : 'Create Exam'}
+              {isSubmitting ? (
+                <span className="flex items-center gap-2">
+                  <div className="w-4 h-4 border-2 border-white border-t-transparent rounded-full animate-spin"></div>
+                  Saving...
+                </span>
+              ) : (
+                exam ? 'Update Exam' : 'Create Exam'
+              )}
             </button>
           </div>
         </form>
