@@ -8,3 +8,5 @@ target/
 .github
 .env.local
 .vscode
+*.pdf
+*.docx
